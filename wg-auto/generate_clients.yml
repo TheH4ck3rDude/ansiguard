@@ -1,0 +1,69 @@
+- name: Generate new WireGuard client config
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vault/vpn_vault.yml
+    - group_vars/vpn.yml
+    - group_vars/vpn_dynamic_peers.yml
+  vars:
+    client_base_ipv4: "10.10.1."
+    client_base_ipv6: "fd01:10::"
+    clients_dir: "./clients"
+    wireguard_dir: "/etc/wireguard"
+  tasks:
+    - name: Ensure client config directory exists
+      ansible.builtin.file:
+        path: "{{ clients_dir }}"
+        state: directory
+
+    - name: Calculate next available client index
+      set_fact:
+        next_client_index: "{{ (vpn_peers_dynamic | length) + 5 }}"  # starts from .5
+
+    - name: Generate private key
+      ansible.builtin.command: wg genkey
+      register: client_priv
+
+    - name: Generate public key from private key
+      ansible.builtin.shell: "echo {{ client_priv.stdout }} | wg pubkey"
+      register: client_pub
+      
+    - name: Generate preshared key
+      ansible.builtin.command: wg genpsk
+      register: client_psk
+
+    - name: Set client IPs
+      set_fact:
+        client_ipv4: "{{ client_base_ipv4 }}{{ next_client_index }}"
+        client_ipv6: "{{ client_base_ipv6 }}{{ next_client_index }}"
+
+    - name: Generate client config file
+      ansible.builtin.template:
+        src: templates/client.conf.j2
+        dest: "{{ clients_dir }}/client_config-{{ next_client_index }}.conf"
+        mode: "0600"
+
+    - name: Ensure dynamic peer list file exists
+      copy:
+        content: "vpn_peers_dynamic: []"
+        dest: group_vars/vpn_dynamic_peers.yml
+        force: no
+
+    - name: Read dynamic peers
+      slurp:
+        src: group_vars/vpn_dynamic_peers.yml
+      register: existing_peers
+
+    - name: Parse dynamic peers
+      set_fact:
+        vpn_peers_dynamic: "{{ (existing_peers.content | b64decode | from_yaml | default({})).get('vpn_peers_dynamic', []) }}"
+
+    - name: Add new peer
+      set_fact:
+        vpn_peers_dynamic: "{{ vpn_peers_dynamic + [ { 'pubkey': client_pub.stdout, 'psk': client_psk.stdout, 'allowedips': client_ipv4 + '/32, ' + client_ipv6 + '/128' } ] }}"
+
+    - name: Save updated peer list
+      copy:
+        content: "{{ {'vpn_peers_dynamic': vpn_peers_dynamic} | to_nice_yaml }}"
+        dest: group_vars/vpn_dynamic_peers.yml
+

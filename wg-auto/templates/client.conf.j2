@@ -1,0 +1,12 @@
+[Interface]
+PrivateKey = {{ client_priv.stdout }}
+Address = {{ client_ipv4 }}/32, {{ client_ipv6 }}/128
+DNS = 94.140.14.14,94.140.15.15
+
+[Peer]
+PublicKey = {{ vpn_server_public }}
+PresharedKey = {{ client_psk.stdout }}
+Endpoint = 143.198.112.216:{{ vpn_network.listenport }}
+AllowedIPs = 10.10.1.0/24, 137.184.214.54
+PersistentKeepalive = 25
+

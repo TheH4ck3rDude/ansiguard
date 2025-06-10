@@ -1,0 +1,18 @@
+[Interface]
+PrivateKey = {{ vpn_server_private }}
+Address = {{ vpn_network.ipv4 }}, {{ vpn_network.ipv6 }}
+ListenPort = {{ vpn_network.listenport }}
+SaveConfig = {{ vpn_network.saveconfig }}
+
+# PostUp and PostDown commands to configure iptables and NAT
+PostUp = iptables -A FORWARD -i eth0 -o wg0 -j ACCEPT; iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; iptables -A FORWARD -i eth1 -o wg0 -j ACCEPT; iptables -A FORWARD -i wg0 -o eth1 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE; ip6tables -A FORWARD -i wg0 -o eth0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; ip6tables -A FORWARD -i wg0 -o eth1 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+PostDown = iptables -D FORWARD -i eth0 -o wg0 -j ACCEPT; iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; iptables -D FORWARD -i eth1 -o wg0 -j ACCEPT; iptables -D FORWARD -i wg0 -o eth1 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth1 -j MASQUERADE; ip6tables -D FORWARD -i wg0 -o eth0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; ip6tables -D FORWARD -i wg0 -o eth1 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o eth1 -j MASQUERADE
+
+{% for peer in vpn_peers_dynamic %}
+[Peer]
+PublicKey = {{ peer.pubkey }}
+PresharedKey = {{ peer.psk }}
+AllowedIPs = {{ peer.allowedips }}
+{% endfor %}
+

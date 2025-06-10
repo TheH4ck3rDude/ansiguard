@@ -1,0 +1,11 @@
+vpn_packages:
+  - wireguard
+
+vpn_network:
+  name: "myprivnet"
+  ipv4: "10.10.1.1/24"
+  ipv4_subnet: "10.10.1.0/24"
+  ipv6: "fd01:10::1/64"
+  ipv6_subnet: "fd01:10::/64"
+  listenport: "65278"
+  saveconfig: "true"

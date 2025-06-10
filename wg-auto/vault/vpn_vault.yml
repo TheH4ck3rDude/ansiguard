@@ -1,4 +1,3 @@
-vpn_host_sudo: "Sup3rS3cretP4$s!@"
-vpn_server_private: "AJVNJ3aaFdwPA1Kt6Jiup7E3PVshrskCLyclYfI6ClE="
-vpn_server_public: "bhh267Kp5S71rvLhmI8Mmz1qD/FbzTIjS0S6I54Y9S8="
-
+vpn_host_sudo: "YourUserPasswordHere"
+vpn_server_private: "<Generate_Private_Key>"
+vpn_server_public: "<Generate_Public_Key"

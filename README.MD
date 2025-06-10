@@ -58,18 +58,37 @@ To simplify the setup, here’s a high-level directory structure:
 
 ---
 
-## Running the Playbook
+## Setting up the Server and Clients
 
-To set up the WireGuard server on your VPS, run the following Ansible command:
+**Step 1**
+
+- To set up the WireGuard server on your VPS, run the following Ansible command:
 
 ```bash
 ansible-playbook deploy_vpn.yml -i inventory/hosts.yml -v
 ```
 
-- **Ensure That The Config Changes Below are Completed Before Running the Deployment **
+**Step 2**
+
+- Ensure That The Config Changes Below are Completed Before Continuing the Deployment
+
+**Step 3**
+
+- Generate The Client Config Files
+
+```bash
+./howManyClients.sh -n <# of Clients>
+```
+
+**Step 4**
+
+- Run the commands from **Step 1** again so that the server config can populate with the newly created client config files.
+
+**Things to Note**
 
 - `deploy_vpn.yml` is the playbook that sets up the WireGuard server.
 - `inventory/hosts.yml` contains the configuration for the server and clients.
+- `./howManyClients.sh` bash script to auto generate clients and their associated public and private keys.
 
 ---
 
